@@ -14,12 +14,6 @@ MAINTAINER jaaem
 
 LABEL Description="This image is used to start a script that will monitor for RF events on 433Mhz (configurable) and send the data to an MQTT server"
 
-# Configure Go
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
-RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
-
 #
 # First install software packages needed to compile rtl_433 and to publish MQTT events
 #
@@ -35,11 +29,15 @@ RUN apk add --no-cache --virtual build-deps alpine-sdk cmake git libusb-dev && \
     chmod +s /usr/local/bin/rtl_* && \
     apk del build-deps && \
     rm -r /tmp/src && \
-    apk add --no-cache --virtual libusb coreutils wget make musl-dev go git gcc && \
-    mkdir -p ${GOPATH}/src ${GOPATH}/bin && \
-    go get github.com/bemasher/rtlamr && \
-    apk del libusb coreutils wget make musl-dev go git gcc && \
-    apk add --no-cache mosquitto-clients jq
+    apk add --no-cache libusb mosquitto-clients jq coreutils wget make musl-dev go git gcc
+	
+# Configure Go
+ENV GOROOT /usr/lib/go
+ENV GOPATH /go
+ENV PATH /go/bin:$PATH
+RUN mkdir -p ${GOPATH}/src ${GOPATH}/bin
+
+RUN go get github.com/bemasher/rtlamr
 
 #
 # Define an environment variable
